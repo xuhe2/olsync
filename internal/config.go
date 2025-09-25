@@ -13,6 +13,8 @@ import (
 // Config 是整个配置文件的顶级结构体。
 type Config struct {
 	Overleaf OverleafConfig `yaml:"overleaf"`
+	Backup   BackupConfig   `yaml:"backup"`
+	Projects ProjectConfig  `yaml:"projects"`
 }
 
 // OverleafConfig 包含了 Overleaf 服务的配置信息。
@@ -22,6 +24,16 @@ type OverleafConfig struct {
 		Name  string `yaml:"name"`
 		Value string `yaml:"value"`
 	} `yaml:"cookies"`
+}
+
+type BackupConfig struct {
+	Path     string `yaml:"path"`
+	Schedule string `yaml:"schedule"`
+	KeepLast int    `yaml:"keep_last"`
+}
+
+type ProjectConfig struct {
+	Include []string `yaml:"include"`
 }
 
 // ParseConfig 从指定路径解析 YAML 配置文件。
@@ -77,4 +89,16 @@ func (c *Config) GetBaseURL() url.URL {
 		log.Fatalf("invalid base url: %s", c.Overleaf.BaseURL)
 	}
 	return *url
+}
+
+func (c *Config) ShouldBackupProject(projectName string) bool {
+	if len(c.Projects.Include) == 0 {
+		return true // include 为空 => 备份所有项目
+	}
+	for _, name := range c.Projects.Include {
+		if name == projectName {
+			return true
+		}
+	}
+	return false
 }
