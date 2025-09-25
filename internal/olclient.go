@@ -13,6 +13,7 @@ import (
 )
 
 const (
+	HomePageUrlPattern           = "/project/"
 	DownloadProjectZipUrlPattern = "/project/%s/download/zip"
 )
 
@@ -53,9 +54,19 @@ func (c *OLClient) WithCookies(cookies []*http.Cookie) *OLClient {
 	return c
 }
 
+func (c *OLClient) WithTransport(transport http.RoundTripper) *OLClient {
+	c.client.Transport = transport
+	return c
+}
+
 // 需要手动Close io.ReadCloser
 func (c *OLClient) VisitHomePage() (io.ReadCloser, error) {
-	resp, err := c.client.Get(c.projectPageUrl.String())
+	homePageUrl, err := url.JoinPath(c.projectPageUrl.String(), HomePageUrlPattern)
+	if err != nil {
+		return nil, err
+	}
+	log.Printf("Visit Home Page: %s", homePageUrl)
+	resp, err := c.client.Get(homePageUrl)
 	if err != nil {
 		return nil, err
 	}

@@ -2,9 +2,7 @@ package main
 
 import (
 	"fmt"
-	"io"
 	"log"
-	"os"
 
 	"github.com/xuhe2/olsync/internal"
 )
@@ -35,16 +33,16 @@ func main() {
 	}
 	defer reader.Close()
 
-	// TODO: save to file to disk
-	filePath := fmt.Sprintf("%s.zip", p1.Name)
-	file, err := os.Create(filePath)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	defer file.Close()
+	// // TODO: save to file to disk
+	// filePath := fmt.Sprintf("%s.zip", p1.Name)
+	// file, err := os.Create(filePath)
+	// if err != nil {
+	// 	fmt.Println(err)
+	// 	return
+	// }
+	// defer file.Close()
 
-	copied, err := io.Copy(file, reader)
-	fmt.Println("Downloaded project to", filePath)
-	fmt.Println(copied)
+	// copied, err := io.Copy(file, reader)
+	// fmt.Println("Downloaded project to", filePath)
+	// fmt.Println(copied)
 }
