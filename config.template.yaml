@@ -5,9 +5,13 @@ overleaf:
   # The base URL for the Overleaf API.
   # This should typically be "https://www.overleaf.com".
   baseUrl: "https://www.overleaf.com"
+  # baseUrl: "http://localhost:8880" # local overleaf server
 
   # The session cookies required for authentication.
   # You can get these from your browser's developer tools after logging in.
   cookies:
     - name: "overleaf_session2"
       value: ""
+    # for local overleaf server
+    # - name: "overleaf.sid"
+    #   value: ""
