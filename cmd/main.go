@@ -19,30 +19,19 @@ func main() {
 		WithProjectPageUrl(config.GetBaseURL())
 
 	projects := client.GetProjects()
-
-	// try to download the first project
-
-	log.Printf("Found %d projects", len(projects))
-	log.Printf("First project: %s", projects[0].Name)
-	p1 := projects[0]
-
-	reader, err := client.DownloadProjectZip(p1)
-	if err != nil {
-		fmt.Println(err)
-		return
+	backupProjects := make([]internal.Project, 0)
+	for _, project := range projects {
+		if config.ShouldBackupProject(project.Name) {
+			backupProjects = append(backupProjects, project)
+		}
 	}
-	defer reader.Close()
 
-	// // TODO: save to file to disk
-	// filePath := fmt.Sprintf("%s.zip", p1.Name)
-	// file, err := os.Create(filePath)
-	// if err != nil {
-	// 	fmt.Println(err)
-	// 	return
-	// }
-	// defer file.Close()
+	var backupManager internal.BackupManager = internal.NewZipBackupManager(client,
+		config.Backup)
 
-	// copied, err := io.Copy(file, reader)
-	// fmt.Println("Downloaded project to", filePath)
-	// fmt.Println(copied)
+	if err := backupManager.RunBackup(backupProjects); err != nil {
+		log.Fatalf("Backup failed: %v", err)
+	}
+
+	log.Println("Backup finished successfully")
 }
