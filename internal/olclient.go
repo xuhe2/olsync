@@ -5,7 +5,6 @@ import (
 	"io"
 	"log"
 	"net/http"
-	"net/http/cookiejar"
 	"net/url"
 	"time"
 
@@ -23,22 +22,20 @@ type OLClient struct {
 	client *http.Client
 
 	projectPageUrl url.URL
+	cookies        []*http.Cookie
 }
 
 // NewOLClient 创建并返回一个新的 OLClient 实例。
 func NewOLClient() *OLClient {
-	// 创建一个 cookie jar
-	jar, _ := cookiejar.New(nil)
-
 	client := &OLClient{
 		client: &http.Client{
 			Timeout: 30 * time.Second, // 设置超时，防止请求挂起
-			Jar:     jar,              // 初始化 Cookie Jar
 		},
 		projectPageUrl: url.URL{
 			Scheme: "https",
 			Host:   "www.overleaf.com",
 		},
+		cookies: make([]*http.Cookie, 0),
 	}
 	return client
 }
@@ -48,9 +45,18 @@ func (c *OLClient) WithProjectPageUrl(url url.URL) *OLClient {
 	return c
 }
 
+// 通过 AOP 方式设置 Cookie（不会直接写入 Jar，而是每次请求动态注入）
 func (c *OLClient) WithCookies(cookies []*http.Cookie) *OLClient {
-	// 设置全部cookie
-	c.client.Jar.SetCookies(&c.projectPageUrl, cookies)
+	c.cookies = cookies
+	// 包装 Transport，加一层拦截器
+	baseTransport := c.client.Transport
+	if baseTransport == nil {
+		baseTransport = http.DefaultTransport
+	}
+	c.client.Transport = &cookieInjectorTransport{
+		base:    baseTransport,
+		cookies: cookies,
+	}
 	return c
 }
 
@@ -93,6 +99,7 @@ func (c *OLClient) GetProjects() []Project {
 	// 检查是否找到了该元素。
 	if selection.Length() == 0 {
 		log.Println("未找到 meta 标签 'ol-prefetchedProjectsBlob'")
+		fmt.Println(doc.Html())
 		return []Project{}
 	}
 
