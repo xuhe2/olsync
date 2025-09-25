@@ -9,9 +9,5 @@ overleaf:
   # The session cookies required for authentication.
   # You can get these from your browser's developer tools after logging in.
   cookies:
-    - name: "__stripe_mid"
-      value: ""
-    - name: "GCLB"
-      value: ""
     - name: "overleaf_session2"
       value: ""
