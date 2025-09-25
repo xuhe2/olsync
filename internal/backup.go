@@ -9,6 +9,8 @@ import (
 	"sort"
 	"strings"
 	"time"
+
+	"github.com/robfig/cron/v3"
 )
 
 // 将非法字符替换为 _
@@ -76,6 +78,31 @@ func (z *ZipBackupManager) BackupProject(project Project) error {
 
 // RunBackup 批量备份
 func (z *ZipBackupManager) RunBackup(projects []Project) error {
+	schedule := strings.TrimSpace(z.Config.Schedule)
+	if schedule == "" {
+		log.Println("未设置定时任务，执行一次性备份")
+		return z.runOnce(projects)
+	}
+
+	c := cron.New(cron.WithSeconds()) // 允许解析到秒（更精细）
+	_, err := c.AddFunc(schedule, func() {
+		log.Printf("触发定时备份任务: %s", schedule)
+		if err := z.runOnce(projects); err != nil {
+			log.Printf("定时备份失败: %v", err)
+		}
+	})
+	if err != nil {
+		return fmt.Errorf("解析 Cron 表达式失败: %w", err)
+	}
+
+	log.Printf("启动定时备份任务, Cron 表达式: %s", schedule)
+	c.Start()
+
+	// 阻塞主线程，保持程序常驻
+	select {}
+}
+
+func (z *ZipBackupManager) runOnce(projects []Project) error {
 	for _, p := range projects {
 		if err := z.BackupProject(p); err != nil {
 			log.Printf("备份项目 %s 失败: %v", p.Name, err)
