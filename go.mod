@@ -5,6 +5,7 @@ go 1.23.4
 require (
 	github.com/PuerkitoBio/goquery v1.10.3
 	github.com/goccy/go-yaml v1.18.0
+	github.com/pkg/errors v0.9.1
 	github.com/robfig/cron/v3 v3.0.1
 )
 

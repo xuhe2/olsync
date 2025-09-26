@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/pkg/errors"
 	"github.com/robfig/cron/v3"
 )
 
@@ -67,11 +68,12 @@ func (z *ZipBackupManager) BackupProject(project Project) error {
 	defer out.Close()
 
 	if _, err := io.Copy(out, reader); err != nil {
+		// 删除已创建的备份文件
+		os.Remove(fullPath)
+		log.Printf("因为写入备份文件失败，已删除: %s", fullPath)
+
 		return fmt.Errorf("写入备份文件失败: %w", err)
 	}
-
-	// 清理旧备份文件夹
-	z.cleanupOldBackups()
 
 	return nil
 }
@@ -103,11 +105,21 @@ func (z *ZipBackupManager) RunBackup(projects []Project) error {
 }
 
 func (z *ZipBackupManager) runOnce(projects []Project) error {
+	var totalErr error
 	for _, p := range projects {
 		if err := z.BackupProject(p); err != nil {
 			log.Printf("备份项目 %s 失败: %v", p.Name, err)
+			totalErr = errors.Wrap(totalErr, err.Error()) // 记录所有错误，最后统一返回, 防止部分失败导致全部失败(容错)
 		}
 	}
+	if totalErr != nil { // 如果存在错误，则返回
+		return totalErr
+	}
+
+	// 清理旧备份文件夹
+	// 只有全部成功写入文件后，才进行清理
+	z.cleanupOldBackups()
+
 	return nil
 }
 
