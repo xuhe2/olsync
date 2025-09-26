@@ -3,12 +3,20 @@ package main
 import (
 	"fmt"
 	"log"
+	"os"
 
 	"github.com/xuhe2/olsync/internal"
 )
 
 func main() {
-	config, err := internal.ParseConfigFromFile("config.yaml")
+	// get config yaml path from command line argument
+	// if not provided, use default config.yaml
+	ConfigPath := "config.yaml"
+	if len(os.Args) > 1 {
+		ConfigPath = os.Args[1]
+	}
+
+	config, err := internal.ParseConfigFromFile(ConfigPath)
 	if err != nil {
 		fmt.Println(err)
 		return
