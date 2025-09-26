@@ -42,3 +42,8 @@ For example, on Linux you might see:
 ```
 
 > The default is to use the config.yaml file in the current path.
+
+You can specify a custom configuration file by passing its path as an argument:
+```bash
+./bin/olsync-linux-amd64 ./config2.yaml
+```

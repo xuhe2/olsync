@@ -42,3 +42,8 @@ make build
 ```
 
 > 默认使用当前路径下的 config.yaml 文件。
+
+您可以通过传递其路径作为参数来指定自定义配置文件：
+```bash
+./bin/olsync-linux-amd64 ./config2.yaml
+```
