@@ -18,7 +18,7 @@ overleaf:
 
 backup:
   path: "./Backup"            # 备份文件夹，支持相对路径
-  schedule: "0 */6 * * *"     # Cron 表达式，每 6 小时备份一次
+  schedule: "0 * */6 * * *"     # Cron 表达式，每 6 小时备份一次
   keep_last: 5                # 保留最近 5 个备份，自动清理旧文件
 
 projects:
